@@ -9,7 +9,7 @@ namespace ImageProcessorCore
     /// An interface that represents a packed pixel type.
     /// </summary>
     /// <typeparam name="TPacked">The packed format. <example>uint, long, float.</example></typeparam>
-    public interface IPackedPixel<TPacked> : IPackedVector<TPacked>, IPackedBytes
+    public interface IPackedPixel<TPacked> : IPackedVector<TPacked>, IPackedBytes, IPixelReaderWriter
         where TPacked : struct
     {
     }

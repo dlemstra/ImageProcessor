@@ -207,6 +207,18 @@ namespace ImageProcessorCore
             return left.packedValue != right.packedValue;
         }
 
+        /// <inheritdoc/>
+        IPixelReader IPixelReaderWriter.CreateReader(int width, int padding, ComponentOrder componentOrder)
+        {
+            return new ColorPixelReader(width, padding, componentOrder);
+        }
+
+        /// <inheritdoc/>
+        IPixelWriter IPixelReaderWriter.CreateWriter(int width, int padding, ComponentOrder componentOrder)
+        {
+            return new ColorPixelWriter(width, padding, componentOrder);
+        }
+
         /// <summary>
         /// Creates a new instance of the <see cref="Color"/> struct.
         /// </summary>
