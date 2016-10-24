@@ -104,8 +104,8 @@ namespace ImageProcessorCore
         /// <returns>The <see cref="TColor"/> at the specified position.</returns>
         public TColor this[int x, int y]
         {
-            get { return Unsafe.Read<TColor>(this.pixelsBase + (y * this.Width + x) * Unsafe.SizeOf<TColor>()); }
-            set { Unsafe.Write(this.pixelsBase + (y * this.Width + x) * Unsafe.SizeOf<TColor>(), value); }
+            get { return Unsafe.Read<TColor>(this.pixelsBase + (y * this.Width + x) * this.PixelSize); }
+            set { Unsafe.Write(this.pixelsBase + (y * this.Width + x) * this.PixelSize, value); }
         }
 
         /// <summary>
@@ -119,10 +119,9 @@ namespace ImageProcessorCore
         /// <param name="pixelCount">The number of pixels to copy</param>
         public void CopyBlock(int sourceX, int sourceY, PixelAccessor<TColor, TPacked> target, int targetX, int targetY, int pixelCount)
         {
-            int size = Unsafe.SizeOf<TColor>();
-            byte* sourcePtr = this.pixelsBase + (sourceY * this.Width + sourceX) * size;
-            byte* targetPtr = target.pixelsBase + (targetY * target.Width + targetX) * size;
-            uint byteCount = (uint)(pixelCount * size);
+            byte* sourcePtr = this.pixelsBase + (sourceY * this.Width + sourceX) * this.PixelSize;
+            byte* targetPtr = target.pixelsBase + (targetY * target.Width + targetX) * this.PixelSize;
+            uint byteCount = (uint)(pixelCount * this.PixelSize);
 
             Unsafe.CopyBlock(targetPtr, sourcePtr, byteCount);
         }
@@ -163,6 +162,22 @@ namespace ImageProcessorCore
             // and prevent finalization code for this object
             // from executing a second time.
             GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Sets the pixel at the specified position to the given color.
+        /// </summary>
+        /// <param name="x">The x-coordinate of the pixel. Must be greater than zero and smaller than the width of the pixel.</param>
+        /// <param name="y">The y-coordinate of the pixel. Must be greater than zero and smaller than the width of the pixel.</param>
+        /// <param name="value">The <see cref="TColor"/>.</returns>
+        public void SetPixel(int x, int y, ref TColor value)
+        {
+            Unsafe.Write(this.pixelsBase + (y * this.Width + x) * this.PixelSize, value);
+        }
+
+        internal byte* GetRowPointer(int y)
+        {
+            return this.pixelsBase + (y * this.Width) * this.PixelSize;
         }
     }
 }
