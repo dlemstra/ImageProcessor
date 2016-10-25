@@ -267,6 +267,8 @@ namespace ImageProcessorCore.Formats
                            // Convert the color to YCbCr and store the luminance
                            // Optionally store the original color alpha.
                            int dataOffset = (y * stride) + (x * this.bytesPerPixel);
+
+                           // TODO: Manually convert so that we can avoid using the vector.
                            Color source = new Color(pixels[x, y].ToVector4());
                            YCbCr luminance = source;
                            for (int i = 0; i < this.bytesPerPixel; i++)
@@ -292,12 +294,14 @@ namespace ImageProcessorCore.Formats
         /// <typeparam name="TPacked">The packed format. <example>uint, long, float.</example></typeparam>
         /// <param name="image">The image to encode.</param>
         private void CollectColorBytes<TColor, TPacked>(ImageBase<TColor, TPacked> image)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             // Copy the pixels across from the image.
             this.pixelData = new byte[this.width * this.height * this.bytesPerPixel];
             int stride = this.width * this.bytesPerPixel;
+
+            int bpp = this.bytesPerPixel;
             using (PixelAccessor<TColor, TPacked> pixels = image.Lock())
             {
                 Parallel.For(
@@ -309,15 +313,7 @@ namespace ImageProcessorCore.Formats
                        for (int x = 0; x < this.width; x++)
                        {
                            int dataOffset = (y * stride) + (x * this.bytesPerPixel);
-                           Color source = new Color(pixels[x, y].ToVector4());
-
-                           this.pixelData[dataOffset] = source.R;
-                           this.pixelData[dataOffset + 1] = source.G;
-                           this.pixelData[dataOffset + 2] = source.B;
-                           if (this.bytesPerPixel == 4)
-                           {
-                               this.pixelData[dataOffset + 3] = source.A;
-                           }
+                           pixels[x, y].ToBytes(this.pixelData, dataOffset, bpp == 4 ? ComponentOrder.RGBA : ComponentOrder.RGB);
                        }
                    });
             }
@@ -330,8 +326,7 @@ namespace ImageProcessorCore.Formats
         /// <returns>The <see cref="T:byte[]"/></returns>
         private byte[] EncodePixelData()
         {
-            List<byte[]> filteredScanlines = new List<byte[]>();
-
+            byte[][] filteredScanlines = new byte[this.height][];
             byte[] previousScanline = new byte[this.width * this.bytesPerPixel];
 
             for (int y = 0; y < this.height; y++)
@@ -339,14 +334,13 @@ namespace ImageProcessorCore.Formats
                 byte[] rawScanline = this.GetRawScanline(y);
                 byte[] filteredScanline = this.GetOptimalFilteredScanline(rawScanline, previousScanline, this.bytesPerPixel);
 
-                filteredScanlines.Add(filteredScanline);
-
+                filteredScanlines[y] = filteredScanline;
                 previousScanline = rawScanline;
             }
 
             List<byte> result = new List<byte>();
 
-            foreach (var encodedScanline in filteredScanlines)
+            foreach (byte[] encodedScanline in filteredScanlines)
             {
                 result.AddRange(encodedScanline);
             }
@@ -364,24 +358,24 @@ namespace ImageProcessorCore.Formats
         /// <returns>The <see cref="T:byte[]"/></returns>
         private byte[] GetOptimalFilteredScanline(byte[] rawScanline, byte[] previousScanline, int byteCount)
         {
-            List<Tuple<byte[], int>> candidates = new List<Tuple<byte[], int>>();
+            Tuple<byte[], int>[] candidates = new Tuple<byte[], int>[4];
 
             byte[] sub = SubFilter.Encode(rawScanline, byteCount);
-            candidates.Add(new Tuple<byte[], int>(sub, this.CalculateTotalVariation(sub)));
+            candidates[0] = new Tuple<byte[], int>(sub, this.CalculateTotalVariation(sub));
 
             byte[] up = UpFilter.Encode(rawScanline, previousScanline);
-            candidates.Add(new Tuple<byte[], int>(up, this.CalculateTotalVariation(up)));
+            candidates[1] = new Tuple<byte[], int>(up, this.CalculateTotalVariation(up));
 
             byte[] average = AverageFilter.Encode(rawScanline, previousScanline, byteCount);
-            candidates.Add(new Tuple<byte[], int>(average, this.CalculateTotalVariation(average)));
+            candidates[2] = new Tuple<byte[], int>(average, this.CalculateTotalVariation(average));
 
             byte[] paeth = PaethFilter.Encode(rawScanline, previousScanline, byteCount);
-            candidates.Add(new Tuple<byte[], int>(paeth, this.CalculateTotalVariation(paeth)));
+            candidates[3] = new Tuple<byte[], int>(paeth, this.CalculateTotalVariation(paeth));
 
             int lowestTotalVariation = int.MaxValue;
             int lowestTotalVariationIndex = 0;
 
-            for (int i = 0; i < candidates.Count; i++)
+            for (int i = 0; i < 4; i++)
             {
                 if (candidates[i].Item2 < lowestTotalVariation)
                 {
@@ -405,7 +399,8 @@ namespace ImageProcessorCore.Formats
 
             for (int i = 1; i < input.Length; i++)
             {
-                totalVariation += Math.Abs(input[i] - input[i - 1]);
+                int variation = input[i] - input[i - 1];
+                totalVariation += variation > 0 ? variation : -variation;
             }
 
             return totalVariation;

@@ -227,7 +227,7 @@ namespace ImageProcessorCore.Formats
         /// <param name="dataStream">The <see cref="MemoryStream"/> containing data.</param>
         /// <param name="pixels"> The pixel data.</param>
         private void ReadScanlines<TColor, TPacked>(MemoryStream dataStream, TColor[] pixels)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             this.bytesPerPixel = this.CalculateBytesPerPixel();
@@ -260,7 +260,7 @@ namespace ImageProcessorCore.Formats
         /// <param name="pixelData">The pixel data.</param>
         /// <param name="pixels">The image pixels.</param>
         private void DecodePixelData<TColor, TPacked>(byte[] pixelData, TColor[] pixels)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             byte[] previousScanline = new byte[this.bytesPerScanline];
@@ -322,7 +322,7 @@ namespace ImageProcessorCore.Formats
         /// <param name="row">The current image row.</param>
         /// <param name="pixels">The image pixels</param>
         private void ProcessDefilteredScanline<TColor, TPacked>(byte[] defilteredScanline, int row, TColor[] pixels)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             switch (this.PngColorType)
@@ -336,7 +336,7 @@ namespace ImageProcessorCore.Formats
                         byte intensity = defilteredScanline[offset];
 
                         TColor color = default(TColor);
-                        color.PackFromVector4(new Vector4(intensity, intensity, intensity, 255) / 255F);
+                        color.PackFromBytes(intensity, intensity, intensity, 255);
                         pixels[(row * this.header.Width) + x] = color;
                     }
 
@@ -352,7 +352,7 @@ namespace ImageProcessorCore.Formats
                         byte alpha = defilteredScanline[offset + this.bytesPerSample];
 
                         TColor color = default(TColor);
-                        color.PackFromVector4(new Vector4(intensity, intensity, intensity, alpha) / 255F);
+                        color.PackFromBytes(intensity, intensity, intensity, alpha);
                         pixels[(row * this.header.Width) + x] = color;
                     }
 
@@ -379,7 +379,7 @@ namespace ImageProcessorCore.Formats
                                 byte r = this.palette[pixelOffset];
                                 byte g = this.palette[pixelOffset + 1];
                                 byte b = this.palette[pixelOffset + 2];
-                                color.PackFromVector4(new Vector4(r, g, b, a) / 255F);
+                                color.PackFromBytes(r, g, b, a);
                             }
 
                             pixels[offset] = color;
@@ -398,7 +398,7 @@ namespace ImageProcessorCore.Formats
                             byte b = this.palette[pixelOffset + 2];
 
                             TColor color = default(TColor);
-                            color.PackFromVector4(new Vector4(r, g, b, 255) / 255F);
+                            color.PackFromBytes(r, g, b, 255); 
                             pixels[offset] = color;
                         }
                     }
@@ -416,7 +416,7 @@ namespace ImageProcessorCore.Formats
                         byte b = defilteredScanline[offset + (2 * this.bytesPerSample)];
 
                         TColor color = default(TColor);
-                        color.PackFromVector4(new Vector4(r, g, b, 255) / 255F);
+                        color.PackFromBytes(r, g, b, 255);  
                         pixels[(row * this.header.Width) + x] = color;
                     }
 
@@ -434,7 +434,7 @@ namespace ImageProcessorCore.Formats
                         byte a = defilteredScanline[offset + (3 * this.bytesPerSample)];
 
                         TColor color = default(TColor);
-                        color.PackFromVector4(new Vector4(r, g, b, a) / 255F);
+                        color.PackFromBytes(r, g, b, a);
                         pixels[(row * this.header.Width) + x] = color;
                     }
 
