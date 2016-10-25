@@ -19,6 +19,11 @@ namespace ImageProcessorCore
         where TPacked : struct
     {
         /// <summary>
+        /// Gets the size of a single pixel in the number of bytes.
+        /// </summary>
+        private static readonly int pixelSize = Unsafe.SizeOf<TPacked>();
+
+        /// <summary>
         /// The pointer to the pixel buffer.
         /// </summary>
         private IntPtr dataPointer;
@@ -31,7 +36,7 @@ namespace ImageProcessorCore
         /// <summary>
         /// Provides a way to access the pixels from unmanaged memory.
         /// </summary>
-        private GCHandle pixelsHandle;
+        private readonly GCHandle pixelsHandle;
 
         /// <summary>
         /// A value indicating whether this instance of the given entity has been disposed.
@@ -59,7 +64,6 @@ namespace ImageProcessorCore
             this.pixelsHandle = GCHandle.Alloc(image.Pixels, GCHandleType.Pinned);
             this.dataPointer = this.pixelsHandle.AddrOfPinnedObject();
             this.pixelsBase = (byte*)this.dataPointer.ToPointer();
-            this.PixelSize = Unsafe.SizeOf<TPacked>();
             this.RowStride = this.Width * this.PixelSize;
         }
 
@@ -79,7 +83,7 @@ namespace ImageProcessorCore
         /// <summary>
         /// Gets the size of a single pixel in the number of bytes.
         /// </summary>
-        public int PixelSize { get; }
+        public int PixelSize => pixelSize;
 
         /// <summary>
         /// Gets the width of one row in the number of bytes.
@@ -104,8 +108,8 @@ namespace ImageProcessorCore
         /// <returns>The <see cref="TColor"/> at the specified position.</returns>
         public TColor this[int x, int y]
         {
-            get { return Unsafe.Read<TColor>(this.pixelsBase + (y * this.Width + x) * this.PixelSize); }
-            set { Unsafe.Write(this.pixelsBase + (y * this.Width + x) * this.PixelSize, value); }
+            get { return Unsafe.Read<TColor>(this.pixelsBase + (y * this.Width + x) * pixelSize); }
+            set { Unsafe.Write(this.pixelsBase + (y * this.Width + x) * pixelSize, value); }
         }
 
         /// <summary>
@@ -119,9 +123,9 @@ namespace ImageProcessorCore
         /// <param name="pixelCount">The number of pixels to copy</param>
         public void CopyBlock(int sourceX, int sourceY, PixelAccessor<TColor, TPacked> target, int targetX, int targetY, int pixelCount)
         {
-            byte* sourcePtr = this.pixelsBase + (sourceY * this.Width + sourceX) * this.PixelSize;
-            byte* targetPtr = target.pixelsBase + (targetY * target.Width + targetX) * this.PixelSize;
-            uint byteCount = (uint)(pixelCount * this.PixelSize);
+            byte* sourcePtr = this.pixelsBase + (sourceY * this.Width + sourceX) * pixelSize;
+            byte* targetPtr = target.pixelsBase + (targetY * target.Width + targetX) * pixelSize;
+            uint byteCount = (uint)(pixelCount * pixelSize);
 
             Unsafe.CopyBlock(targetPtr, sourcePtr, byteCount);
         }
@@ -172,12 +176,12 @@ namespace ImageProcessorCore
         /// <param name="value">The <see cref="TColor"/>.</returns>
         public void SetPixel(int x, int y, ref TColor value)
         {
-            Unsafe.Write(this.pixelsBase + (y * this.Width + x) * this.PixelSize, value);
+            Unsafe.Write(this.pixelsBase + (y * this.Width + x) * pixelSize, value);
         }
 
         internal byte* GetRowPointer(int y)
         {
-            return this.pixelsBase + (y * this.Width) * this.PixelSize;
+            return this.pixelsBase + (y * this.Width) * pixelSize;
         }
     }
 }
