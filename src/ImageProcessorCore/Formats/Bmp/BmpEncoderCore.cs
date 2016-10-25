@@ -155,20 +155,22 @@ namespace ImageProcessorCore.Formats
             where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
+            byte[] bytes = new byte[(pixels.Width * pixels.Height * 4) + (this.padding * pixels.Height)];
+            int index = 0;
+
             for (int y = pixels.Height - 1; y >= 0; y--)
             {
-                // TODO: Use an array pool and rent this. 
-                byte[] bytes = new byte[(pixels.Width * 4) + this.padding];
-                int index = 0;
                 for (int x = 0; x < pixels.Width; x++)
                 {
                     // Convert back to b-> g-> r-> a order.
-                    pixels[x, y].ToBytes(bytes, index, ComponentOrder.BGR);
+                    pixels[x, y].ToBytes(bytes, index, ComponentOrder.BGRA);
                     index += 4;
                 }
 
-                writer.Write(bytes);
+                index += this.padding;
             }
+
+            writer.Write(bytes);
         }
 
         /// <summary>
@@ -182,10 +184,10 @@ namespace ImageProcessorCore.Formats
             where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
+            byte[] bytes = new byte[(pixels.Width * pixels.Height * 3) + (this.padding * pixels.Height)];
+            int index = 0;
             for (int y = pixels.Height - 1; y >= 0; y--)
             {
-                byte[] bytes = new byte[(pixels.Width * 3) + this.padding];
-                int index = 0;
                 for (int x = 0; x < pixels.Width; x++)
                 {
                     // Convert back to b-> g-> r order.
@@ -193,8 +195,10 @@ namespace ImageProcessorCore.Formats
                     index += 3;
                 }
 
-                writer.Write(bytes);
+                index += this.padding;
             }
+
+            writer.Write(bytes);
         }
     }
 }
