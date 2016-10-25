@@ -14,7 +14,7 @@ namespace ImageProcessorCore.Benchmarks.Image
 
     public class CopyPixels
     {
-        [Benchmark(Description = "Copy by Pixel")]
+        [Benchmark(Baseline = true, Description = "Copy by Pixel")]
         public CoreColor CopyByPixel()
         {
             CoreImage source = new CoreImage(1024, 768);

@@ -16,11 +16,11 @@ namespace ImageProcessorCore
         /// <summary>
         /// Gets the packed representation from the gives bytes.
         /// </summary>
-        /// <param name="r">The red component.</param>
-        /// <param name="g">The green component.</param>
-        /// <param name="b">The blue component.</param>
-        /// <param name="a">The alpha component.</param>
-        void PackFromBytes(byte r, byte g, byte b, byte a);
+        /// <param name="x">The red component.</param>
+        /// <param name="y">The green component.</param>
+        /// <param name="z">The blue component.</param>
+        /// <param name="w">The alpha component.</param>
+        void PackFromBytes(byte x, byte y, byte z, byte w);
 
         /// <summary>
         /// Sets the packed representation into the gives bytes.
@@ -28,7 +28,7 @@ namespace ImageProcessorCore
         /// <param name="bytes">The bytes to set the color in.</param>
         /// <param name="startIndex">The starting index of the <paramref name="bytes"/>.</param>
         /// <param name="componentOrder">The order of the components.</param>
-        /// <returns>The <see cref="byte[]"/>.</returns>
+        /// <returns>The <see cref="T:byte[]"/>.</returns>
         void ToBytes(byte[] bytes, int startIndex, ComponentOrder componentOrder);
     }
 }

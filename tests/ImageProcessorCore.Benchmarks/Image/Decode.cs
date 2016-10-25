@@ -40,7 +40,7 @@ namespace ImageProcessorCore.Benchmarks.Image
             }
         }
 
-        [Benchmark(Description = "System.Drawing Bmp")]
+        [Benchmark(Baseline = true, Description = "System.Drawing Bmp")]
         public Size BmpSystemDrawing()
         {
             using (MemoryStream memoryStream = new MemoryStream(bmpBytes))
@@ -62,70 +62,70 @@ namespace ImageProcessorCore.Benchmarks.Image
             }
         }
 
-        [Benchmark(Description = "System.Drawing Gif")]
-        public Size GifSystemDrawing()
-        {
-            using (MemoryStream memoryStream = new MemoryStream(gifBytes))
-            {
-                using (Image image = Image.FromStream(memoryStream))
-                {
-                    return image.Size;
-                }
-            }
-        }
+        //[Benchmark(Description = "System.Drawing Gif")]
+        //public Size GifSystemDrawing()
+        //{
+        //    using (MemoryStream memoryStream = new MemoryStream(gifBytes))
+        //    {
+        //        using (Image image = Image.FromStream(memoryStream))
+        //        {
+        //            return image.Size;
+        //        }
+        //    }
+        //}
 
-        [Benchmark(Description = "ImageProcessorCore Gif")]
-        public CoreSize GifCore()
-        {
-            using (MemoryStream memoryStream = new MemoryStream(gifBytes))
-            {
-                CoreImage image = new CoreImage(memoryStream);
-                return new CoreSize(image.Width, image.Height);
-            }
-        }
+        //[Benchmark(Description = "ImageProcessorCore Gif")]
+        //public CoreSize GifCore()
+        //{
+        //    using (MemoryStream memoryStream = new MemoryStream(gifBytes))
+        //    {
+        //        CoreImage image = new CoreImage(memoryStream);
+        //        return new CoreSize(image.Width, image.Height);
+        //    }
+        //}
 
-        [Benchmark(Description = "System.Drawing Jpeg")]
-        public Size JpegSystemDrawing()
-        {
-            using (MemoryStream memoryStream = new MemoryStream(jpegBytes))
-            {
-                using (Image image = Image.FromStream(memoryStream))
-                {
-                    return image.Size;
-                }
-            }
-        }
+        //[Benchmark(Description = "System.Drawing Jpeg")]
+        //public Size JpegSystemDrawing()
+        //{
+        //    using (MemoryStream memoryStream = new MemoryStream(jpegBytes))
+        //    {
+        //        using (Image image = Image.FromStream(memoryStream))
+        //        {
+        //            return image.Size;
+        //        }
+        //    }
+        //}
 
-        [Benchmark(Description = "ImageProcessorCore Jpeg")]
-        public CoreSize JpegCore()
-        {
-            using (MemoryStream memoryStream = new MemoryStream(jpegBytes))
-            {
-                CoreImage image = new CoreImage(memoryStream);
-                return new CoreSize(image.Width, image.Height);
-            }
-        }
+        //[Benchmark(Description = "ImageProcessorCore Jpeg")]
+        //public CoreSize JpegCore()
+        //{
+        //    using (MemoryStream memoryStream = new MemoryStream(jpegBytes))
+        //    {
+        //        CoreImage image = new CoreImage(memoryStream);
+        //        return new CoreSize(image.Width, image.Height);
+        //    }
+        //}
 
-        [Benchmark(Description = "System.Drawing Png")]
-        public Size PngSystemDrawing()
-        {
-            using (MemoryStream memoryStream = new MemoryStream(pngBytes))
-            {
-                using (Image image = Image.FromStream(memoryStream))
-                {
-                    return image.Size;
-                }
-            }
-        }
+        //[Benchmark(Description = "System.Drawing Png")]
+        //public Size PngSystemDrawing()
+        //{
+        //    using (MemoryStream memoryStream = new MemoryStream(pngBytes))
+        //    {
+        //        using (Image image = Image.FromStream(memoryStream))
+        //        {
+        //            return image.Size;
+        //        }
+        //    }
+        //}
 
-        [Benchmark(Description = "ImageProcessorCore Png")]
-        public CoreSize PngCore()
-        {
-            using (MemoryStream memoryStream = new MemoryStream(pngBytes))
-            {
-                CoreImage image = new CoreImage(memoryStream);
-                return new CoreSize(image.Width, image.Height);
-            }
-        }
+        //[Benchmark(Description = "ImageProcessorCore Png")]
+        //public CoreSize PngCore()
+        //{
+        //    using (MemoryStream memoryStream = new MemoryStream(pngBytes))
+        //    {
+        //        CoreImage image = new CoreImage(memoryStream);
+        //        return new CoreSize(image.Width, image.Height);
+        //    }
+        //}
     }
 }

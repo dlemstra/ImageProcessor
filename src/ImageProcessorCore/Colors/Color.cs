@@ -2,7 +2,6 @@
 // Copyright (c) James Jackson-South and contributors.
 // Licensed under the Apache License, Version 2.0.
 // </copyright>
-
 namespace ImageProcessorCore
 {
     using System;
@@ -207,10 +206,23 @@ namespace ImageProcessorCore
             return left.packedValue != right.packedValue;
         }
 
-        /// <inheritdoc/>
-        void IPackedBytes<uint>.PackFromBytes(byte r, byte g, byte b, byte a)
+        /// <summary>
+        /// Creates a new instance of the <see cref="Color"/> struct.
+        /// </summary>
+        /// <param name="hex">
+        /// The hexadecimal representation of the combined color components arranged
+        /// in rgb, rgba, rrggbb, or rrggbbaa format to match web syntax.
+        /// </param>
+        /// <returns>The <see cref="Color"/></returns>
+        public static Color FromHex(string hex)
         {
-            this.packedValue = Pack(r, g, b, a);
+            return new Color(hex);
+        }
+
+        /// <inheritdoc/>
+        void IPackedBytes<uint>.PackFromBytes(byte x, byte y, byte z, byte w)
+        {
+            this.packedValue = (uint)(x << 24 | y << 16 | z << 8 | w);
         }
 
         /// <inheritdoc/>
@@ -219,42 +231,30 @@ namespace ImageProcessorCore
             switch (componentOrder)
             {
                 case ComponentOrder.BGR:
-                    bytes[startIndex] = B;
-                    bytes[startIndex + 1] = G;
-                    bytes[startIndex + 2] = R;
+                    bytes[startIndex] = this.B;
+                    bytes[startIndex + 1] = this.G;
+                    bytes[startIndex + 2] = this.R;
                     break;
                 case ComponentOrder.BGRA:
-                    bytes[startIndex] = B;
-                    bytes[startIndex + 1] = G;
-                    bytes[startIndex + 2] = R;
-                    bytes[startIndex + 3] = A;
+                    bytes[startIndex] = this.B;
+                    bytes[startIndex + 1] = this.G;
+                    bytes[startIndex + 2] = this.R;
+                    bytes[startIndex + 3] = this.A;
                     break;
                 case ComponentOrder.RGB:
-                    bytes[startIndex] = R;
-                    bytes[startIndex + 1] = G;
-                    bytes[startIndex + 2] = B;
+                    bytes[startIndex] = this.R;
+                    bytes[startIndex + 1] = this.G;
+                    bytes[startIndex + 2] = this.B;
                     break;
                 case ComponentOrder.RGBA:
-                    bytes[startIndex] = R;
-                    bytes[startIndex + 1] = G;
-                    bytes[startIndex + 2] = B;
-                    bytes[startIndex + 3] = A;
+                    bytes[startIndex] = this.R;
+                    bytes[startIndex + 1] = this.G;
+                    bytes[startIndex + 2] = this.B;
+                    bytes[startIndex + 3] = this.A;
                     break;
                 default:
-                   throw new NotSupportedException();
+                    throw new NotSupportedException();
             }
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="Color"/> struct.
-        /// </summary>
-        /// <param name="hex">
-        /// The hexadecimal representation of the combined color components arranged
-        /// in rgb, rgba, rrggbb, or rrggbbaa format to match web syntax.
-        /// </param>
-        public static Color FromHex(string hex)
-        {
-            return new Color(hex);
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace ImageProcessorCore
         /// Packs a <see cref="Vector4"/> into a uint.
         /// </summary>
         /// <param name="vector">The vector containing the values to pack.</param>
-        /// <returns>The ulong containing the packed values.</returns>
+        /// <returns>The <see cref="uint"/> containing the packed values.</returns>
         private static uint Pack(ref Vector4 vector)
         {
             vector = Vector4.Clamp(vector, Vector4.Zero, Vector4.One);
@@ -318,14 +318,14 @@ namespace ImageProcessorCore
             return (uint)(((byte)vector.X << 24)
                         | ((byte)vector.Y << 16)
                         | ((byte)vector.Z << 8)
-                        |  (byte)vector.W);
+                        | (byte)vector.W);
         }
 
         /// <summary>
         /// Packs a <see cref="Vector3"/> into a uint.
         /// </summary>
         /// <param name="vector">The vector containing the values to pack.</param>
-        /// <returns>The ulong containing the packed values.</returns>
+        /// <returns>The <see cref="uint"/> containing the packed values.</returns>
         private static uint Pack(ref Vector3 vector)
         {
             Vector4 value = new Vector4(vector, 1);

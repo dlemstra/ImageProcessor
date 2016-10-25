@@ -196,7 +196,7 @@ namespace ImageProcessorCore.Formats
         /// <param name="bits">The number of bits per pixel.</param>
         /// <param name="inverted">Whether the bitmap is inverted.</param>
         private void ReadRgbPalette<TColor, TPacked>(TColor[] imageData, byte[] colors, int width, int height, int bits, bool inverted)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             // Pixels per byte (bits per pixel)
@@ -242,7 +242,7 @@ namespace ImageProcessorCore.Formats
 
                                 // Stored in b-> g-> r order.
                                 TColor packed = default(TColor);
-                                packed.PackFromVector4(new Color(colors[colorIndex + 2], colors[colorIndex + 1], colors[colorIndex]).ToVector4());
+                                packed.PackFromBytes(colors[colorIndex + 2], colors[colorIndex + 1], colors[colorIndex], 255);  //.PackFromVector4(new Color(colors[colorIndex + 2], colors[colorIndex + 1], colors[colorIndex]).ToVector4());
                                 imageData[arrayOffset] = packed;
                             }
                         }
@@ -259,7 +259,7 @@ namespace ImageProcessorCore.Formats
         /// <param name="height">The height of the bitmap.</param>
         /// <param name="inverted">Whether the bitmap is inverted.</param>
         private void ReadRgb16<TColor, TPacked>(TColor[] imageData, int width, int height, bool inverted)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             // We divide here as we will store the colors in our floating point format.
@@ -290,11 +290,11 @@ namespace ImageProcessorCore.Formats
                             byte g = (byte)(((temp & Rgb16GMask) >> 5) * ScaleG);
                             byte b = (byte)((temp & Rgb16BMask) * ScaleR);
 
-                            int arrayOffset = ((row * width) + x);
+                            int arrayOffset = (row * width) + x;
 
                             // Stored in b-> g-> r order.
                             TColor packed = default(TColor);
-                            packed.PackFromVector4(new Color(r, g, b).ToVector4());
+                            packed.PackFromBytes(r, g, b, 255); // .PackFromVector4(new Color(r, g, b).ToVector4());
                             imageData[arrayOffset] = packed;
                         }
                     });
@@ -310,7 +310,7 @@ namespace ImageProcessorCore.Formats
         /// <param name="height">The height of the bitmap.</param>
         /// <param name="inverted">Whether the bitmap is inverted.</param>
         private void ReadRgb24<TColor, TPacked>(TColor[] imageData, int width, int height, bool inverted)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             int alignment;
@@ -330,11 +330,11 @@ namespace ImageProcessorCore.Formats
                         for (int x = 0; x < width; x++)
                         {
                             int offset = rowOffset + (x * 3);
-                            int arrayOffset = ((row * width) + x);
+                            int arrayOffset = (row * width) + x;
 
                             // Stored in b-> g-> r-> a order.
                             TColor packed = default(TColor);
-                            packed.PackFromVector4(new Color(data[offset + 2], data[offset + 1], data[offset]).ToVector4());
+                            packed.PackFromBytes(data[offset + 2], data[offset + 1], data[offset], 255);
                             imageData[arrayOffset] = packed;
                         }
                     });
@@ -350,7 +350,7 @@ namespace ImageProcessorCore.Formats
         /// <param name="height">The height of the bitmap.</param>
         /// <param name="inverted">Whether the bitmap is inverted.</param>
         private void ReadRgb32<TColor, TPacked>(TColor[] imageData, int width, int height, bool inverted)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             int alignment;
@@ -370,11 +370,11 @@ namespace ImageProcessorCore.Formats
                         for (int x = 0; x < width; x++)
                         {
                             int offset = rowOffset + (x * 4);
-                            int arrayOffset = ((row * width) + x);
+                            int arrayOffset = (row * width) + x;
 
                             // Stored in b-> g-> r-> a order.
                             TColor packed = default(TColor);
-                            packed.PackFromVector4(new Color(data[offset + 2], data[offset + 1], data[offset], data[offset + 3]).ToVector4());
+                            packed.PackFromBytes(data[offset + 2], data[offset + 1], data[offset], data[offset + 3]);
                             imageData[arrayOffset] = packed;
                         }
                     });

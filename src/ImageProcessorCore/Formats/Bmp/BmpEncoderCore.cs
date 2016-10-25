@@ -27,13 +27,13 @@ namespace ImageProcessorCore.Formats
         /// <summary>
         /// Encodes the image to the specified stream from the <see cref="ImageBase{TColor, TPacked}"/>.
         /// </summary>
-        /// <typeparam name="T">The pixel format.</typeparam>
+        /// <typeparam name="TColor">The pixel format.</typeparam>
         /// <typeparam name="TPacked">The packed format. <example>long, float.</example></typeparam>
         /// <param name="image">The <see cref="ImageBase{TColor, TPacked}"/> to encode from.</param>
         /// <param name="stream">The <see cref="Stream"/> to encode the image data to.</param>
         /// <param name="bitsPerPixel">The <see cref="BmpBitsPerPixel"/></param>
         public void Encode<TColor, TPacked>(ImageBase<TColor, TPacked> image, Stream stream, BmpBitsPerPixel bitsPerPixel)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             Guard.NotNull(image, nameof(image));
@@ -126,7 +126,7 @@ namespace ImageProcessorCore.Formats
         /// The <see cref="ImageBase{TColor, TPacked}"/> containing pixel data.
         /// </param>
         private void WriteImage<TColor, TPacked>(EndianBinaryWriter writer, ImageBase<TColor, TPacked> image)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             using (PixelAccessor<TColor, TPacked> pixels = image.Lock())
@@ -134,11 +134,11 @@ namespace ImageProcessorCore.Formats
                 switch (this.bmpBitsPerPixel)
                 {
                     case BmpBitsPerPixel.Pixel32:
-                        this.Write32Bit<TColor, TPacked>(writer, pixels);
+                        this.Write32Bit(writer, pixels);
                         break;
 
                     case BmpBitsPerPixel.Pixel24:
-                        this.Write24Bit<TColor, TPacked>(writer, pixels);
+                        this.Write24Bit(writer, pixels);
                         break;
                 }
             }
@@ -152,23 +152,22 @@ namespace ImageProcessorCore.Formats
         /// <param name="writer">The <see cref="EndianBinaryWriter"/> containing the stream to write to.</param>
         /// <param name="pixels">The <see cref="PixelAccessor{TColor,TPacked}"/> containing pixel data.</param>
         private void Write32Bit<TColor, TPacked>(EndianBinaryWriter writer, PixelAccessor<TColor, TPacked> pixels)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             for (int y = pixels.Height - 1; y >= 0; y--)
             {
+                // TODO: Use an array pool and rent this. 
+                byte[] bytes = new byte[(pixels.Width * 4) + this.padding];
+                int index = 0;
                 for (int x = 0; x < pixels.Width; x++)
                 {
                     // Convert back to b-> g-> r-> a order.
-                    Color color = new Color(pixels[x, y].ToVector4());
-                    writer.Write(new[] { color.B, color.G, color.R, color.A });
+                    pixels[x, y].ToBytes(bytes, index, ComponentOrder.BGR);
+                    index += 4;
                 }
 
-                // Pad
-                for (int i = 0; i < this.padding; i++)
-                {
-                    writer.Write((byte)0);
-                }
+                writer.Write(bytes);
             }
         }
 
@@ -180,23 +179,21 @@ namespace ImageProcessorCore.Formats
         /// <param name="writer">The <see cref="EndianBinaryWriter"/> containing the stream to write to.</param>
         /// <param name="pixels">The <see cref="PixelAccessor{TColor,TPacked}"/> containing pixel data.</param>
         private void Write24Bit<TColor, TPacked>(EndianBinaryWriter writer, PixelAccessor<TColor, TPacked> pixels)
-            where TColor : struct, IPackedVector<TPacked>
+            where TColor : struct, IPackedPixel<TPacked>
             where TPacked : struct
         {
             for (int y = pixels.Height - 1; y >= 0; y--)
             {
+                byte[] bytes = new byte[(pixels.Width * 3) + this.padding];
+                int index = 0;
                 for (int x = 0; x < pixels.Width; x++)
                 {
                     // Convert back to b-> g-> r order.
-                    Color color = new Color(pixels[x, y].ToVector4());
-                    writer.Write(new[] { color.B, color.G, color.R });
+                    pixels[x, y].ToBytes(bytes, index, ComponentOrder.BGR);
+                    index += 3;
                 }
 
-                // Pad
-                for (int i = 0; i < this.padding; i++)
-                {
-                    writer.Write((byte)0);
-                }
+                writer.Write(bytes);
             }
         }
     }
