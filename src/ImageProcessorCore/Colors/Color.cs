@@ -17,7 +17,7 @@ namespace ImageProcessorCore
     /// This struct is fully mutable. This is done (against the guidelines) for the sake of performance,
     /// as it avoids the need to create new values for modification operations.
     /// </remarks>
-    public partial struct Color : IPackedVector<uint>, IEquatable<Color>
+    public partial struct Color : IPackedPixel<uint>, IEquatable<Color>
     {
         /// <summary>
         /// The maximum byte value.
@@ -205,6 +205,44 @@ namespace ImageProcessorCore
         public static bool operator !=(Color left, Color right)
         {
             return left.packedValue != right.packedValue;
+        }
+
+        /// <inheritdoc/>
+        void IPackedBytes<uint>.PackFromBytes(byte r, byte g, byte b, byte a)
+        {
+            this.packedValue = Pack(r, g, b, a);
+        }
+
+        /// <inheritdoc/>
+        void IPackedBytes<uint>.ToBytes(byte[] bytes, int startIndex, ComponentOrder componentOrder)
+        {
+            switch (componentOrder)
+            {
+                case ComponentOrder.BGR:
+                    bytes[startIndex] = B;
+                    bytes[startIndex + 1] = G;
+                    bytes[startIndex + 2] = R;
+                    break;
+                case ComponentOrder.BGRA:
+                    bytes[startIndex] = B;
+                    bytes[startIndex + 1] = G;
+                    bytes[startIndex + 2] = R;
+                    bytes[startIndex + 3] = A;
+                    break;
+                case ComponentOrder.RGB:
+                    bytes[startIndex] = R;
+                    bytes[startIndex + 1] = G;
+                    bytes[startIndex + 2] = B;
+                    break;
+                case ComponentOrder.RGBA:
+                    bytes[startIndex] = R;
+                    bytes[startIndex + 1] = G;
+                    bytes[startIndex + 2] = B;
+                    bytes[startIndex + 3] = A;
+                    break;
+                default:
+                   throw new NotSupportedException();
+            }
         }
 
         /// <summary>
