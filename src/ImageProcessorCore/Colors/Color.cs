@@ -2,6 +2,7 @@
 // Copyright (c) James Jackson-South and contributors.
 // Licensed under the Apache License, Version 2.0.
 // </copyright>
+
 namespace ImageProcessorCore
 {
     using System;
@@ -219,14 +220,23 @@ namespace ImageProcessorCore
             return new Color(hex);
         }
 
+        /// <summary>
+        /// Converts the value of this instance to a hexadecimal string.
+        /// </summary>
+        /// <returns>A hexadecimal string representation of the value.</returns>
+        public string ToHex()
+        {
+            return this.PackedValue.ToString("X8");
+        }
+
         /// <inheritdoc/>
-        void IPackedBytes<uint>.PackFromBytes(byte x, byte y, byte z, byte w)
+        public void PackFromBytes(byte x, byte y, byte z, byte w)
         {
             this.packedValue = (uint)(x << 24 | y << 16 | z << 8 | w);
         }
 
         /// <inheritdoc/>
-        void IPackedBytes<uint>.ToBytes(byte[] bytes, int startIndex, ComponentOrder componentOrder)
+        public void ToBytes(byte[] bytes, int startIndex, ComponentOrder componentOrder)
         {
             switch (componentOrder)
             {
@@ -255,15 +265,6 @@ namespace ImageProcessorCore
                 default:
                     throw new NotSupportedException();
             }
-        }
-
-        /// <summary>
-        /// Converts the value of this instance to a hexadecimal string.
-        /// </summary>
-        /// <returns>A hexadecimal string representation of the value.</returns>
-        public string ToHex()
-        {
-            return this.PackedValue.ToString("X8");
         }
 
         /// <inheritdoc/>

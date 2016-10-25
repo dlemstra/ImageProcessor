@@ -242,7 +242,7 @@ namespace ImageProcessorCore.Formats
 
                                 // Stored in b-> g-> r order.
                                 TColor packed = default(TColor);
-                                packed.PackFromBytes(colors[colorIndex + 2], colors[colorIndex + 1], colors[colorIndex], 255);  //.PackFromVector4(new Color(colors[colorIndex + 2], colors[colorIndex + 1], colors[colorIndex]).ToVector4());
+                                packed.PackFromBytes(colors[colorIndex + 2], colors[colorIndex + 1], colors[colorIndex], 255);
                                 imageData[arrayOffset] = packed;
                             }
                         }
@@ -294,7 +294,7 @@ namespace ImageProcessorCore.Formats
 
                             // Stored in b-> g-> r order.
                             TColor packed = default(TColor);
-                            packed.PackFromBytes(r, g, b, 255); // .PackFromVector4(new Color(r, g, b).ToVector4());
+                            packed.PackFromBytes(r, g, b, 255);
                             imageData[arrayOffset] = packed;
                         }
                     });
