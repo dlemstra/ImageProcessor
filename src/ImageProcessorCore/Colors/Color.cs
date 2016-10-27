@@ -43,7 +43,7 @@ namespace ImageProcessorCore
         /// <param name="a">The alpha component.</param>
         public Color(byte r, byte g, byte b, byte a = 255)
         {
-            this.packedValue = (uint)(r << 24 | g << 16 | b << 8 | a);
+            this.packedValue = Pack(r, g, b, a);
         }
 
         /// <summary>
@@ -214,7 +214,9 @@ namespace ImageProcessorCore
         /// The hexadecimal representation of the combined color components arranged
         /// in rgb, rgba, rrggbb, or rrggbbaa format to match web syntax.
         /// </param>
-        /// <returns>The <see cref="Color"/></returns>
+        /// <returns>
+        /// The <see cref="Color"/>.
+        /// </returns>
         public static Color FromHex(string hex)
         {
             return new Color(hex);
@@ -232,7 +234,7 @@ namespace ImageProcessorCore
         /// <inheritdoc/>
         public void PackFromBytes(byte x, byte y, byte z, byte w)
         {
-            this.packedValue = (uint)(x << 24 | y << 16 | z << 8 | w);
+            this.packedValue = Pack(x, y, z, w);
         }
 
         /// <inheritdoc/>
@@ -334,7 +336,7 @@ namespace ImageProcessorCore
         }
 
         /// <summary>
-        /// Packs the four floats into a uint.
+        /// Packs the four floats into a <see cref="uint"/>.
         /// </summary>
         /// <param name="x">The x-component</param>
         /// <param name="y">The y-component</param>
@@ -345,6 +347,19 @@ namespace ImageProcessorCore
         {
             Vector4 value = new Vector4(x, y, z, w);
             return Pack(ref value);
+        }
+
+        /// <summary>
+        /// Packs the four floats into a <see cref="uint"/>.
+        /// </summary>
+        /// <param name="x">The x-component</param>
+        /// <param name="y">The y-component</param>
+        /// <param name="z">The z-component</param>
+        /// <param name="w">The w-component</param>
+        /// <returns>The <see cref="uint"/></returns>
+        private static uint Pack(byte x, byte y, byte z, byte w)
+        {
+            return (uint)(x << 24 | y << 16 | z << 8 | w);
         }
 
         /// <summary>
