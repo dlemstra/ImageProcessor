@@ -10,7 +10,7 @@ namespace ImageProcessorCore.Formats
     /// rather than just to its left, is used as the predictor.
     /// <see href="https://www.w3.org/TR/PNG-Filters.html"/>
     /// </summary>
-    internal static class UpFilter
+    internal static unsafe class UpFilter
     {
         /// <summary>
         /// Decodes the scanline
@@ -22,13 +22,26 @@ namespace ImageProcessorCore.Formats
         {
             // Up(x) + Prior(x)
             byte[] result = new byte[scanline.Length];
-
-            for (int x = 1; x < scanline.Length; x++)
+            fixed (byte* pinnedResult = result)
+            fixed (byte* pinnedPreviousScanline = previousScanline)
+            fixed (byte* pinnedScanline = scanline)
             {
-                byte above = previousScanline[x];
-
-                result[x] = (byte)((scanline[x] + above) % 256);
+                for (int x = 1; x < scanline.Length; x++)
+                {
+                    byte above = pinnedPreviousScanline[x];
+                    pinnedResult[x] = (byte)((pinnedScanline[x] + above) % 256);
+                }
             }
+
+            // Up(x) + Prior(x)
+            //byte[] result = new byte[scanline.Length];
+
+            //for (int x = 1; x < scanline.Length; x++)
+            //{
+            //    byte above = previousScanline[x];
+
+            //    result[x] = (byte)((scanline[x] + above) % 256);
+            //}
 
             return result;
         }

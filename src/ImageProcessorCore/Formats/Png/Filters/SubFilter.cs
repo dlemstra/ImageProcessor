@@ -10,7 +10,7 @@ namespace ImageProcessorCore.Formats
     /// of the prior pixel.
     /// <see href="https://www.w3.org/TR/PNG-Filters.html"/>
     /// </summary>
-    internal static class SubFilter
+    internal static unsafe class SubFilter
     {
         /// <summary>
         /// Decodes the scanline
@@ -22,13 +22,26 @@ namespace ImageProcessorCore.Formats
         {
             // Sub(x) + Raw(x-bpp)
             byte[] result = new byte[scanline.Length];
-
-            for (int x = 1; x < scanline.Length; x++)
+            fixed (byte* pinnedResult = result)
+            fixed (byte* pinnedScanline = scanline)
             {
-                byte priorRawByte = (x - bytesPerPixel < 1) ? (byte)0 : result[x - bytesPerPixel];
+                for (int x = 1; x < scanline.Length; x++)
+                {
+                    byte priorRawByte = (x - bytesPerPixel < 1) ? (byte)0 : pinnedResult[x - bytesPerPixel];
 
-                result[x] = (byte)((scanline[x] + priorRawByte) % 256);
+                    pinnedResult[x] = (byte)((pinnedScanline[x] + priorRawByte) % 256);
+                }
             }
+            
+            // Sub(x) + Raw(x-bpp)
+            //byte[] result = new byte[scanline.Length];
+
+            //for (int x = 1; x < scanline.Length; x++)
+            //{
+            //    byte priorRawByte = (x - bytesPerPixel < 1) ? (byte)0 : result[x - bytesPerPixel];
+
+            //    result[x] = (byte)((scanline[x] + priorRawByte) % 256);
+            //}
 
             return result;
         }

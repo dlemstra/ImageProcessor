@@ -9,12 +9,13 @@ namespace ImageProcessorCore.Formats
     using System.IO;
     using System.Linq;
     using System.Numerics;
+    using System.Runtime.CompilerServices;
     using System.Text;
 
     /// <summary>
     /// Performs the png decoding operation.
     /// </summary>
-    internal class PngDecoderCore
+    internal unsafe class PngDecoderCore
     {
         /// <summary>
         /// The dictionary of available color types.
@@ -268,7 +269,7 @@ namespace ImageProcessorCore.Formats
             for (int y = 0; y < this.header.Height; y++)
             {
                 byte[] scanline = new byte[this.bytesPerScanline];
-                Array.Copy(pixelData, y * this.bytesPerScanline, scanline, 0, this.bytesPerScanline);
+                Buffer.BlockCopy(pixelData, y * this.bytesPerScanline, scanline, 0, this.bytesPerScanline);
                 FilterType filterType = (FilterType)scanline[0];
                 byte[] defilteredScanline;
 

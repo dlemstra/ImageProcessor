@@ -12,7 +12,7 @@ namespace ImageProcessorCore.Formats
     /// the value of a pixel.
     /// <see href="https://www.w3.org/TR/PNG-Filters.html"/>
     /// </summary>
-    internal static class AverageFilter
+    internal static unsafe class AverageFilter
     {
         /// <summary>
         /// Decodes the scanline
@@ -25,16 +25,30 @@ namespace ImageProcessorCore.Formats
         /// </returns>
         public static byte[] Decode(byte[] scanline, byte[] previousScanline, int bytesPerPixel)
         {
-            // Average(x) + floor((Raw(x-bpp)+Prior(x))/2)
             byte[] result = new byte[scanline.Length];
-
-            for (int x = 1; x < scanline.Length; x++)
+            fixed (byte* pinnedResult = result)
+            fixed (byte* pinnedPreviousScanline = previousScanline)
+            fixed (byte* pinnedScanline = scanline)
             {
-                byte left = (x - bytesPerPixel < 1) ? (byte)0 : result[x - bytesPerPixel];
-                byte above = previousScanline[x];
+                for (int x = 1; x < scanline.Length; x++)
+                {
+                    byte left = (x - bytesPerPixel < 1) ? (byte)0 : pinnedResult[x - bytesPerPixel];
+                    byte above = pinnedPreviousScanline[x];
 
-                result[x] = (byte)((scanline[x] + Average(left, above)) % 256);
+                    result[x] = (byte)((pinnedScanline[x] + Average(left, above)) % 256);
+                }
             }
+
+            // Average(x) + floor((Raw(x-bpp)+Prior(x))/2)
+            //byte[] result = new byte[scanline.Length];
+
+            //for (int x = 1; x < scanline.Length; x++)
+            //{
+            //    byte left = (x - bytesPerPixel < 1) ? (byte)0 : result[x - bytesPerPixel];
+            //    byte above = previousScanline[x];
+
+            //    result[x] = (byte)((scanline[x] + Average(left, above)) % 256);
+            //}
 
             return result;
         }
@@ -72,7 +86,10 @@ namespace ImageProcessorCore.Formats
         /// <returns>The <see cref="int"/></returns>
         private static int Average(byte left, byte above)
         {
-            return Convert.ToInt32(Math.Floor((left + above) / 2.0D));
+            return (left + above) >> 1;
+
+            // TODO: This is probably a timesink
+            //return Convert.ToInt32(Math.Floor((left + above) / 2.0D));
         }
     }
 }
