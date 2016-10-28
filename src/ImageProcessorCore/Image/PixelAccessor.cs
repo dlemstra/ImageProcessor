@@ -24,11 +24,6 @@ namespace ImageProcessorCore
         private IntPtr dataPointer;
 
         /// <summary>
-        /// The position of the first pixel in the bitmap.
-        /// </summary>
-        private byte* pixelsBase;
-
-        /// <summary>
         /// Provides a way to access the pixels from unmanaged memory.
         /// </summary>
         private GCHandle pixelsHandle;
@@ -58,7 +53,7 @@ namespace ImageProcessorCore
             this.Height = image.Height;
             this.pixelsHandle = GCHandle.Alloc(image.Pixels, GCHandleType.Pinned);
             this.dataPointer = this.pixelsHandle.AddrOfPinnedObject();
-            this.pixelsBase = (byte*)this.dataPointer.ToPointer();
+            this.PixelsBase = (byte*)this.dataPointer.ToPointer();
             this.PixelSize = Unsafe.SizeOf<TPacked>();
             this.RowStride = this.Width * this.PixelSize;
         }
@@ -104,9 +99,14 @@ namespace ImageProcessorCore
         /// <returns>The <see cref="TColor"/> at the specified position.</returns>
         public TColor this[int x, int y]
         {
-            get { return Unsafe.Read<TColor>(this.pixelsBase + (y * this.Width + x) * Unsafe.SizeOf<TColor>()); }
-            set { Unsafe.Write(this.pixelsBase + (y * this.Width + x) * Unsafe.SizeOf<TColor>(), value); }
+            get { return Unsafe.Read<TColor>(this.PixelsBase + (y * this.Width + x) * Unsafe.SizeOf<TColor>()); }
+            set { Unsafe.Write(this.PixelsBase + (y * this.Width + x) * Unsafe.SizeOf<TColor>(), value); }
         }
+
+        /// <summary>
+        /// The position of the first pixel in the bitmap.
+        /// </summary>
+        protected byte* PixelsBase { get; private set; }
 
         /// <summary>
         /// Copies a block of pixels at the specified position.
@@ -120,8 +120,8 @@ namespace ImageProcessorCore
         public void CopyBlock(int sourceX, int sourceY, PixelAccessor<TColor, TPacked> target, int targetX, int targetY, int pixelCount)
         {
             int size = Unsafe.SizeOf<TColor>();
-            byte* sourcePtr = this.pixelsBase + (sourceY * this.Width + sourceX) * size;
-            byte* targetPtr = target.pixelsBase + (targetY * target.Width + targetX) * size;
+            byte* sourcePtr = this.PixelsBase + (sourceY * this.Width + sourceX) * size;
+            byte* targetPtr = target.PixelsBase + (targetY * target.Width + targetX) * size;
             uint byteCount = (uint)(pixelCount * size);
 
             Unsafe.CopyBlock(targetPtr, sourcePtr, byteCount);
@@ -194,7 +194,7 @@ namespace ImageProcessorCore
             }
 
             this.dataPointer = IntPtr.Zero;
-            this.pixelsBase = null;
+            this.PixelsBase = null;
 
             // Note disposing is done.
             this.isDisposed = true;
@@ -210,7 +210,7 @@ namespace ImageProcessorCore
         protected virtual void CopyFromBGR(PixelRow<TColor, TPacked> row, int targetY, int width)
         {
             byte* source = row.DataPointer;
-            byte* destination = this.pixelsBase + (targetY * this.Width) * Unsafe.SizeOf<TColor>();
+            byte* destination = this.PixelsBase + (targetY * this.Width) * Unsafe.SizeOf<TColor>();
 
             TColor packed = default(TColor);
             int size = Unsafe.SizeOf<TColor>();
@@ -228,7 +228,7 @@ namespace ImageProcessorCore
         protected virtual void CopyFromBGRA(PixelRow<TColor, TPacked> row, int targetY, int width)
         {
             byte* source = row.DataPointer;
-            byte* destination = this.pixelsBase + (targetY * this.Width) * Unsafe.SizeOf<TColor>();
+            byte* destination = this.PixelsBase + (targetY * this.Width) * Unsafe.SizeOf<TColor>();
 
             TColor packed = default(TColor);
             int size = Unsafe.SizeOf<TColor>();
@@ -246,7 +246,7 @@ namespace ImageProcessorCore
         protected virtual void CopyFromRGB(PixelRow<TColor, TPacked> row, int targetY, int width)
         {
             byte* source = row.DataPointer;
-            byte* destination = this.pixelsBase + (targetY * this.Width) * Unsafe.SizeOf<TColor>();
+            byte* destination = this.PixelsBase + (targetY * this.Width) * Unsafe.SizeOf<TColor>();
 
             TColor packed = default(TColor);
             int size = Unsafe.SizeOf<TColor>();
@@ -264,7 +264,7 @@ namespace ImageProcessorCore
         protected virtual void CopyFromRGBA(PixelRow<TColor, TPacked> row, int targetY, int width)
         {
             byte* source = row.DataPointer;
-            byte* destination = this.pixelsBase + (targetY * this.Width) * Unsafe.SizeOf<TColor>();
+            byte* destination = this.PixelsBase + (targetY * this.Width) * Unsafe.SizeOf<TColor>();
 
             TColor packed = default(TColor);
             int size = Unsafe.SizeOf<TColor>();
