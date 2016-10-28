@@ -17,7 +17,7 @@ namespace ImageProcessorCore
     /// <typeparam name="TPacked">The packed format. <example>uint, long, float.</example></typeparam>
     [DebuggerDisplay("Image: {Width}x{Height}")]
     public abstract class ImageBase<TColor, TPacked> : IImageBase<TColor, TPacked>
-        where TColor : struct, IPackedVector<TPacked>
+        where TColor : struct, IPackedPixel<TPacked>
         where TPacked : struct
     {
 
@@ -140,7 +140,7 @@ namespace ImageProcessorCore
         }
 
         /// <inheritdoc/>
-        public PixelAccessor<TColor, TPacked> Lock()
+        public virtual PixelAccessor<TColor, TPacked> Lock()
         {
             return new PixelAccessor<TColor, TPacked>(this);
         }
